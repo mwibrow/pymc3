@@ -649,17 +649,32 @@ class TestMatchesScipy(SeededTest):
 
 
     # Manual logp values
-    @pytest.mark.parametrize('value,p,q,alpha,beta,mu,sd,logp', [
-        (0, 0, 0.5, 1, 1, None, None, -inf),
-        (0, 1, 0.5, 1, 1, None, None, -0.6931472),
-        (0, 0.5, 0.5, 1, 1, None, None, -1.3862944),
-        (1, 0.5, 0.5, 1, 1, None, None, -1.3862944),
-        (0.5, 0.5, 0.5, 1, 1, None, None, -0.6931472)
+    @pytest.mark.parametrize('value,p,q,alpha,beta,logp', [
+        (0, 0.25, 0.33, 1, 1, -1.786772),
+        (0.5, 0.25, 0.33, 1, 1, -0.287683),
+        (1, 0.25, 0.33, 1, 1, -2.494957),
+        (0, 0.25, 0.66, 1, 1, -2.465105),
+        (0.5, 0.25, 0.66, 1, 1, -0.287683),
+        (1, 0.25, 0.66, 1, 1, -1.80181),
+        (0, 0.75, 0.33, 1, 1, -0.68816),
+        (0.5, 0.75, 0.33, 1, 1, -1.386295),
+        (1, 0.75, 0.33, 1, 1, -1.396345),
+        (0, 0.75, 0.66, 1, 1, -1.366492),
+        (0.5, 0.75, 0.66, 1, 1, -1.386295),
+        (1, 0.75, 0.66, 1, 1, -0.703198),
+        # Zero-inflated beta
+        (0, 0.5, 0, 1, 1, -0.693148),
+        (0.5, 0.5, 0, 1, 1, -0.693148),
+        (1, 0.5, 0, 1, 1, -inf),
+        # One-inflated beta
+        (0, 0.5, 1, 1, 1, -inf)
+        (0.5, 0.5, 1, 1, 1, -0.693148)
+        (1, 0.5, 1, 1, 1, -0.693148)
     ])
-    def test_zero_one_inflated_beta(self, value, p, q, alpha, beta, mu, sd, logp):
+    def test_zero_one_inflated_beta(self, value, p, q, alpha, beta, logp):
          with Model() as model:
             ZeroOneInflatedBeta(
-                'zoib', p=p, q=q, alpha=alpha, beta=meta, mu=mu, sd=sd,
+                'zoib', p=p, q=q, alpha=alpha, beta=beta,
                 transform=None)
         pt = {'zoib': value}
         decimals = select_by_precision(float64=6, float32=1)
