@@ -2435,14 +2435,14 @@ class Interpolated(Continuous):
 
 class ZeroOneInflatedBeta(Beta):
     R"""
-    The Zero-and-One inflated Beta distribution can be used
+    The Zero-and-One inflated beta distribution can be used
     to model fractional data that contains ones and/or zeros,
     and contains the Zero-inflated Beta distribution
-    and One-inflated Beta distribution as special cases
+    and One-inflated beta distribution as special cases
     [LiuEugenio2018].
 
     Following [OspinaFerrar2007], the distribution is represented
-    as a mixture between a Beta distribution and a Bernoulli
+    as a mixture between a beta distribution and a Bernoulli
     distribution, but retains the standard paramtrization
     of the Beta distribution with two shape parameters.
 
@@ -2487,8 +2487,8 @@ class ZeroOneInflatedBeta(Beta):
 
     Notes:
     ------
-    This distribution can also model the Zero-inflated Beta distribution
-    (by setting q = 0) and the One-inflated Beta distribution
+    This distribution can also model the Zero-inflated beta distribution
+    (by setting q = 0) and the One-inflated beta distribution
     (by setting q = 1).
 
     References
