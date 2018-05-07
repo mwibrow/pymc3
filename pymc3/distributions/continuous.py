@@ -68,7 +68,7 @@ def assert_negative_support(var, label, distname, value=-1e-6):
 
 def get_tau_sd(tau=None, sd=None):
     """
-    Find precision and standard deviation. The link between the two 
+    Find precision and standard deviation. The link between the two
     parameterizations is given by the inverse relationship:
 
     .. math::
@@ -275,14 +275,14 @@ class Normal(Continuous):
         Standard deviation (sd > 0) (only required if tau is not specified).
     tau : float
         Precision (tau > 0) (only required if sd is not specified).
-        
+
     Examples
     --------
     .. code-block:: python
 
         with pm.Model():
             x = pm.Normal('x', mu=0, sd=10)
-            
+
         with pm.Model():
             x = pm.Normal('x', mu=0, tau=1/23)
     """
@@ -887,7 +887,7 @@ class Lognormal(PositiveContinuous):
         Standard deviation. (sd > 0). (only required if tau is not specified).
     tau : float
         Scale parameter (tau > 0). (only required if sd is not specified).
-        
+
     Example
     -------
     .. code-block:: python
@@ -994,14 +994,14 @@ class StudentT(Continuous):
         Standard deviation (sd > 0) (only required if lam is not specified)
     lam : float
         Precision (lam > 0) (only required if sd is not specified)
-        
+
     Examples
     --------
     .. code-block:: python
 
         with pm.Model():
             x = pm.StudentT('x', nu=15, mu=0, sd=10)
-            
+
         with pm.Model():
             x = pm.StudentT('x', nu=15, mu=0, lam=1/23)
     """
@@ -1601,8 +1601,8 @@ class Weibull(PositiveContinuous):
         self.median = beta * tt.exp(gammaln(tt.log(2)))**(1. / alpha)
         self.variance = (beta**2) * \
             tt.exp(gammaln(1 + 2. / alpha - self.mean**2))
-        self.mode = tt.switch(alpha >= 1, 
-                              beta * ((alpha - 1)/alpha) ** (1 / alpha), 
+        self.mode = tt.switch(alpha >= 1,
+                              beta * ((alpha - 1)/alpha) ** (1 / alpha),
                               0)  # Reference: https://en.wikipedia.org/wiki/Weibull_distribution
 
         assert_negative_support(alpha, 'alpha', 'Weibull')
@@ -1682,7 +1682,7 @@ class HalfStudentT(PositiveContinuous):
     lam : float
         Scale parameter (lam > 0). Converges to the precision as nu
         increases. (only required if sd is not specified)
-        
+
     Examples
     --------
     .. code-block:: python
@@ -1690,7 +1690,7 @@ class HalfStudentT(PositiveContinuous):
         # Only pass in one of lam or sd, but not both.
         with pm.Model():
             x = pm.HalfStudentT('x', sd=10, nu=10)
-     
+
         with pm.Model():
             x = pm.HalfStudentT('x', lam=4, nu=10)
     """
@@ -2430,3 +2430,149 @@ class Interpolated(Continuous):
 
     def logp(self, value):
         return tt.log(self.interp_op(value) / self.Z)
+
+
+class ZeroAndOneInflatedBeta(Beta):
+    R"""
+    The Zero-and-One inflated Beta distribution can be used
+    to model fractional data that contains ones and/or zeros,
+    and contains the Zero-inflated Beta distribution
+    and One-inflated Beta distribution as special cases
+    [LiuEugenio2018].
+
+    Following [OspinaFerrar2007], the distribution is represented
+    as a mixture between a Beta distribution and a Bernoulli
+    distribution, but retains the standard paramtrization
+    of the Beta distribution with two shape parameters.
+
+    The pdf of this distribution is:
+
+    .. math::
+
+       f(x \mid p, q, \alpha, \beta) =
+           \begin{cases}
+               p(1 - q) & \text{if } x = 0
+               \\
+               pq & \text{if } x = 1
+               \\
+               (1 - p)
+               \frac{x^{\alpha - 1} (1 - x)^{\beta - 1}}
+                   {B(\alpha, \beta)} & \text{otherwise}
+           \end{cases}
+
+    ========  ==============================================================
+    Support   :math: `x \in (0, 1), x \in [0, 1), x \in (0, 1] or x \in [0, 1]`
+    Mean      :math: `pq + (1 - p)\dfrac{\alpha}{\alpha + \beta}`
+    Variance  :math: `pq(1-q)+(1-p)\left[\dfrac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}+
+                      p\left(q-\dfrac{\alpha}{\alpha+\beta}\right)^2\right]`
+    ========  ==============================================================
+
+    Parameters
+    ----------
+    p : float
+        Probability of (inflated) zero or one occuring 0 <= p <= 1
+    q : float
+        Probability of the inflated value being 1 (0 <= q <= 1)
+    alpha : float
+        alpha > 0.
+    beta : float
+        beta > 0.
+    mu : float
+        Alternative mean for the Beta component, mean (0 < mu < 1).
+    sd : float
+        Alternative standard deviation for the Beta component (0 < sd < sqrt(mu * (1 - mu))).
+
+    Notes:
+    ------
+    This distribution can also model the Zero-inflated Beta distribution
+    (by setting q = 0) and the One-inflated Beta distribution
+    (by setting q = 1).
+
+    References
+    ----------
+
+    .. [LiuEugenio2018] Liu, F. and Eugenio, E. C. (2018).
+       A review and comparison of Bayesian and likelihood-based
+       inferences in beta regression and zero-or-one-inflated beta regression
+       Statistical Methods in Medical Research 2018, Vol. 27(4) 1024–1044
+
+    .. [OspinaFerrar2007] Ospina, R. and Ferrari, S. L. P. (2007).
+        Inflated Beta Distributions.
+        ArXiv e-prints, arXiv:0705.0700
+    """
+    def __init__(self, p=None, q=None, alpha=None, beta=None, mu=None, sd=None,
+                 *args, **kwargs):
+
+        super(ZeroAndOneInflatedBeta, self).__init__(
+            alpha=alpha, beta=beta, mu=mu, sd=sd, *args, **kwargs)
+        self.p = p = tt.as_tensor_variable(p)
+        self.q = p = tt.as_tensor_variable(q)
+        a = self.alpha
+        b = self.beta
+        self.mean = p * q + (1 - p) * a / (a + b)
+        self.variance = p * q * (1 - q) + (1 - p) * (
+            (a * b) / (a + b)**2 / (a + b + 1) +
+            p * (q - a / (a + b))**2)
+
+    def random(self, point=None, size=None):
+        p, q, alpha, beta = draw_values(
+            [self.p, self.q, self.alpha, self.beta],
+            point=point)
+
+        beta_samples = generate_samples(
+            stats.beta.rvs,
+            alpha, beta,
+            dist_shape=self.shape,
+            size=size)
+        i = np.random.binomial(n=1, p=p, size=np.squeeze(beta_samples.shape))
+        beta_samples[i == 1] = 0.
+        i = i * np.random.random(np.squeeze(beta_samples.shape))
+        beta_samples[(i > 0) & (i < q)] = 1.
+        return beta_samples
+
+    def logp(self, value):
+        alpha = self.alpha
+        beta = self.beta
+        p = self.p
+        q = self.q
+
+        beta_logp = tt.switch(
+            tt.eq(value, 0), 0,
+            tt.switch(tt.eq(value, 1), 0,
+                tt.switch(tt.eq(alpha, 1), 0, (alpha - 1) * tt.log(value))
+                + tt.switch(tt.eq(beta, 1), 0, (beta - 1) * tt.log1p(-value))
+            - betaln(alpha, beta)))
+
+        logp_val = tt.switch(
+            tt.eq(value, 0),
+            tt.log(p) + tt.log(1 - q),
+            tt.switch(
+                tt.eq(value, 1),
+                tt.log(p) + log(q),
+                tt.log(1 - p) + beta_logp))
+
+        return bound(
+            logp_val,
+            value >= 0, value < 1,
+            alpha > 0,
+            beta > 0,
+            p >= 0, p <= 1,
+            q >= 0, q <= 1)
+
+    def _repr_latex_(self, name=None, dist=None):
+        if dist is None:
+            dist = self
+        p = dist.p
+        q = dist.q
+        alpha = dist.alpha
+        beta = dist.beta
+        name = r'\text{%s}' % name
+        r',~'.join([r'\mathit{{{{{}}}}}'.format(param)
+                    for param in ['p', 'q', 'alpha', 'beta']])
+        return (r'${} \sim \text{{ZOIB}}(\mathit{{p}}={},~\mathit{{q}}={},'
+            r'~\mathit{{alpha}}={},~\mathit{{beta}}={})$').format(
+            name,
+            get_variable_name(p),
+            get_variable_name(q),
+            get_variable_name(alpha),
+            get_variable_name(beta))

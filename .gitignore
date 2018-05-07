@@ -12,7 +12,8 @@ tags
 # IntelliJ IDE
 .idea
 *.iml
-
+# vscode
+.vscode/
 # Sphinx
 _build
 
