@@ -556,7 +556,7 @@ class TestMatchesScipy(SeededTest):
     def test_wald(self, value, mu, lam, phi, alpha, logp):
         # Log probabilities calculated using the dIG function from the R package gamlss.
         # See e.g., doi: 10.1111/j.1467-9876.2005.00510.x, or
-        # http://www.gamlss.org/.
+        # http://www.gamlss.com/.
         with Model() as model:
             Wald('wald', mu=mu, lam=lam, phi=phi, alpha=alpha, transform=None)
         pt = {'wald': value}
