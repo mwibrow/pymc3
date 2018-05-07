@@ -26,7 +26,8 @@ __all__ = ['Uniform', 'Flat', 'HalfFlat', 'Normal', 'Beta', 'Exponential',
            'Laplace', 'StudentT', 'Cauchy', 'HalfCauchy', 'Gamma', 'Weibull',
            'HalfStudentT', 'Lognormal', 'ChiSquared', 'HalfNormal', 'Wald',
            'Pareto', 'InverseGamma', 'ExGaussian', 'VonMises', 'SkewNormal',
-           'Triangular', 'Gumbel', 'Logistic', 'LogitNormal', 'Interpolated']
+           'Triangular', 'Gumbel', 'Logistic', 'LogitNormal', 'Interpolated',
+           'ZeroOneInflatedBeta']
 
 
 class PositiveContinuous(Continuous):
@@ -2432,7 +2433,7 @@ class Interpolated(Continuous):
         return tt.log(self.interp_op(value) / self.Z)
 
 
-class ZeroAndOneInflatedBeta(Beta):
+class ZeroOneInflatedBeta(Beta):
     R"""
     The Zero-and-One inflated Beta distribution can be used
     to model fractional data that contains ones and/or zeros,
@@ -2503,7 +2504,7 @@ class ZeroAndOneInflatedBeta(Beta):
     def __init__(self, p=None, q=None, alpha=None, beta=None, mu=None, sd=None,
                  *args, **kwargs):
 
-        super(ZeroAndOneInflatedBeta, self).__init__(
+        super(ZeroOneInflatedBeta, self).__init__(
             alpha=alpha, beta=beta, mu=mu, sd=sd, *args, **kwargs)
         self.p = p = tt.as_tensor_variable(p)
         self.q = p = tt.as_tensor_variable(q)
@@ -2548,7 +2549,7 @@ class ZeroAndOneInflatedBeta(Beta):
             tt.log(p) + tt.log(1 - q),
             tt.switch(
                 tt.eq(value, 1),
-                tt.log(p) + log(q),
+                tt.log(p) + tt.log(q),
                 tt.log(1 - p) + beta_logp))
 
         return bound(

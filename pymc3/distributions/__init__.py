@@ -28,6 +28,7 @@ from .continuous import Gumbel
 from .continuous import Logistic
 from .continuous import LogitNormal
 from .continuous import Interpolated
+from .continuous import ZeroOneInflatedBeta
 
 from .discrete import Binomial
 from .discrete import BetaBinomial
@@ -114,6 +115,7 @@ __all__ = ['Uniform',
            'ZeroInflatedPoisson',
            'ZeroInflatedNegativeBinomial',
            'ZeroInflatedBinomial',
+           'ZeroOneInflatedBeta',
            'DiscreteUniform',
            'Geometric',
            'Categorical',

@@ -354,9 +354,16 @@ class TestZeroInflatedNegativeBinomial(BaseTestCases.BaseTestCase):
     distribution = pm.ZeroInflatedNegativeBinomial
     params = {'mu': 1., 'alpha': 1., 'psi': 0.3}
 
+
 class TestZeroInflatedBinomial(BaseTestCases.BaseTestCase):
     distribution = pm.ZeroInflatedBinomial
     params = {'n': 10, 'p': 0.6, 'psi': 0.3}
+
+
+class TestZeroOneInflatedBeta(BaseTestCases.BaseTestCase):
+    distribution = pm.ZeroOneInflatedBeta
+    params = {'p': 0.5, 'q': 0.5, 'alpha': 1, 'beta': 1}
+
 
 class TestDiscreteUniform(BaseTestCases.BaseTestCase):
     distribution = pm.DiscreteUniform
@@ -727,17 +734,17 @@ class TestScalarParameterSamples(SeededTest):
         for n in [2, 10, 50]:
             #pylint: disable=cell-var-from-loop
             shape = n*(n-1)//2
-            
+
             def ref_rand(size, eta):
                 beta = eta - 1 + n/2
                 return (st.beta.rvs(size=(size, shape), a=beta, b=beta)-.5)*2
 
             class TestedLKJCorr (pm.LKJCorr):
-                
+
                 def __init__(self, **kwargs):
                     kwargs.pop('shape', None)
                     super(TestedLKJCorr, self).__init__(
-                            n=n, 
+                            n=n,
                             **kwargs
                     )
 
@@ -753,12 +760,12 @@ class TestScalarParameterSamples(SeededTest):
 
         pymc3_random(pm.NormalMixture, {'w': Simplex(2),
                      'mu': Domain([[.05, 2.5], [-5., 1.]], edges=(None, None)),
-                     'sd': Domain([[1, 1], [1.5, 2.]], edges=(None, None))}, 
+                     'sd': Domain([[1, 1], [1.5, 2.]], edges=(None, None))},
                      size=1000,
                      ref_rand=ref_rand)
         pymc3_random(pm.NormalMixture, {'w': Simplex(3),
                      'mu': Domain([[-5., 1., 2.5]], edges=(None, None)),
-                     'sd': Domain([[1.5, 2., 3.]], edges=(None, None))}, 
+                     'sd': Domain([[1.5, 2., 3.]], edges=(None, None))},
                      size=1000,
                      ref_rand=ref_rand)
 
