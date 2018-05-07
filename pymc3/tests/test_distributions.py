@@ -11,6 +11,7 @@ from ..distributions import (DensityDist, Categorical, Multinomial, VonMises, Di
                              ZeroInflatedNegativeBinomial, Constant, Poisson, Bernoulli, Beta,
                              BetaBinomial, HalfStudentT, StudentT, Weibull, Pareto,
                              InverseGamma, Gamma, Cauchy, HalfCauchy, Lognormal, Laplace,
+                             ZeroOneInflatedBeta,
                              NegativeBinomial, Geometric, Exponential, ExGaussian, Normal,
                              Flat, LKJCorr, Wald, ChiSquared, HalfNormal, DiscreteUniform,
                              Bound, Uniform, Triangular, Binomial, SkewNormal, DiscreteWeibull,
@@ -646,13 +647,30 @@ class TestMatchesScipy(SeededTest):
     def test_beta_binomial(self):
         self.checkd(BetaBinomial, Nat, {'alpha': Rplus, 'beta': Rplus, 'n': NatSmall})
 
+
+    # Manual logp values
+    @pytest.mark.parametrize('value,p,q,alpha,beta,mu,sd,logp', [
+        (0, 0, 0.5, 1, 1, None, None, -inf),
+        (0, 1, 0.5, 1, 1, None, None, -0.6931472),
+        (0, 0.5, 0.5, 1, 1, None, None, -1.3862944),
+        (1, 0.5, 0.5, 1, 1, None, None, -1.3862944),
+        (0.5, 0.5, 0.5, 1, 1, None, None, -0.6931472)
+    ])
+    def test_zero_one_inflated_beta(self, value, p, q, alpha, beta, mu, sd, logp):
+         with Model() as model:
+            ZeroOneInflatedBeta(
+                'zoib', p=p, q=q, alpha=alpha, beta=meta, mu=mu, sd=sd,
+                transform=None)
+        pt = {'zoib': value}
+        decimals = select_by_precision(float64=6, float32=1)
+        assert_almost_equal(model.fastlogp(pt), logp, decimal=decimals, err_msg=str(pt))
+
     def test_bernoulli(self):
         self.pymc3_matches_scipy(
             Bernoulli, Bool, {'logit_p': R},
             lambda value, logit_p: sp.bernoulli.logpmf(value, scipy.special.expit(logit_p)))
         self.pymc3_matches_scipy(Bernoulli, Bool, {'p': Unit},
                                  lambda value, p: sp.bernoulli.logpmf(value, p))
-
 
     def test_discrete_weibull(self):
         self.pymc3_matches_scipy(DiscreteWeibull, Nat,
