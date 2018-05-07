@@ -2552,9 +2552,10 @@ class ZeroOneInflatedBeta(Beta):
                 tt.log(p) + tt.log(q),
                 tt.log(1 - p) + beta_logp))
 
+
         return bound(
             logp_val,
-            value >= 0, value < 1,
+            value >= 0, value <= 1,
             alpha > 0,
             beta > 0,
             p >= 0, p <= 1,
