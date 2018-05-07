@@ -2519,7 +2519,6 @@ class ZeroOneInflatedBeta(Beta):
         p, q, alpha, beta = draw_values(
             [self.p, self.q, self.alpha, self.beta],
             point=point)
-
         beta_samples = generate_samples(
             stats.beta.rvs,
             alpha, beta,
@@ -2536,14 +2535,12 @@ class ZeroOneInflatedBeta(Beta):
         beta = self.beta
         p = self.p
         q = self.q
-
         beta_logp = tt.switch(
             tt.eq(value, 0), 0,
             tt.switch(tt.eq(value, 1), 0,
                 tt.switch(tt.eq(alpha, 1), 0, (alpha - 1) * tt.log(value))
                 + tt.switch(tt.eq(beta, 1), 0, (beta - 1) * tt.log1p(-value))
             - betaln(alpha, beta)))
-
         logp_val = tt.switch(
             tt.eq(value, 0),
             tt.log(p) + tt.log(1 - q),
@@ -2551,7 +2548,6 @@ class ZeroOneInflatedBeta(Beta):
                 tt.eq(value, 1),
                 tt.log(p) + tt.log(q),
                 tt.log(1 - p) + beta_logp))
-
 
         return bound(
             logp_val,
