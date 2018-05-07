@@ -2464,8 +2464,9 @@ class ZeroOneInflatedBeta(Beta):
     ========  ==============================================================
     Support   :math: `x \in (0, 1), x \in [0, 1), x \in (0, 1] or x \in [0, 1]`
     Mean      :math: `pq + (1 - p)\dfrac{\alpha}{\alpha + \beta}`
-    Variance  :math: `pq(1-q)+(1-p)\left[\dfrac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}+
-                      p\left(q-\dfrac{\alpha}{\alpha+\beta}\right)^2\right]`
+    Variance  :math: `pq(1-q)+(1-p)\left[\dfrac{\alpha\beta}{(\alpha+\beta)^2
+                      (\alpha+\beta+1)}+p\left(q-\dfrac{\alpha}{\alpha+\beta}
+                      \right)^2\right]`
     ========  ==============================================================
 
     Parameters
@@ -2481,7 +2482,8 @@ class ZeroOneInflatedBeta(Beta):
     mu : float
         Alternative mean for the Beta component, mean (0 < mu < 1).
     sd : float
-        Alternative standard deviation for the Beta component (0 < sd < sqrt(mu * (1 - mu))).
+        Alternative standard deviation for the Beta component
+        (0 < sd < sqrt(mu * (1 - mu))).
 
     Notes:
     ------
@@ -2501,6 +2503,7 @@ class ZeroOneInflatedBeta(Beta):
         Inflated Beta Distributions.
         ArXiv e-prints, arXiv:0705.0700
     """
+
     def __init__(self, p=None, q=None, alpha=None, beta=None, mu=None, sd=None,
                  *args, **kwargs):
 
@@ -2537,10 +2540,11 @@ class ZeroOneInflatedBeta(Beta):
         q = self.q
         beta_logp = tt.switch(
             tt.eq(value, 0), 0,
-            tt.switch(tt.eq(value, 1), 0,
-                tt.switch(tt.eq(alpha, 1), 0, (alpha - 1) * tt.log(value))
-                + tt.switch(tt.eq(beta, 1), 0, (beta - 1) * tt.log1p(-value))
-            - betaln(alpha, beta)))
+            tt.switch(
+                tt.eq(value, 1), 0,
+                tt.switch(tt.eq(alpha, 1), 0, (alpha - 1) * tt.log(value)) +
+                tt.switch(tt.eq(beta, 1), 0, (beta - 1) * tt.log1p(-value)) -
+                betaln(alpha, beta)))
         logp_val = tt.switch(
             tt.eq(value, 0),
             tt.log(p) + tt.log(1 - q),
@@ -2568,9 +2572,9 @@ class ZeroOneInflatedBeta(Beta):
         r',~'.join([r'\mathit{{{{{}}}}}'.format(param)
                     for param in ['p', 'q', 'alpha', 'beta']])
         return (r'${} \sim \text{{ZOIB}}(\mathit{{p}}={},~\mathit{{q}}={},'
-            r'~\mathit{{alpha}}={},~\mathit{{beta}}={})$').format(
-            name,
-            get_variable_name(p),
-            get_variable_name(q),
-            get_variable_name(alpha),
-            get_variable_name(beta))
+                r'~\mathit{{alpha}}={},~\mathit{{beta}}={})$').format(
+                    name,
+                    get_variable_name(p),
+                    get_variable_name(q),
+                    get_variable_name(alpha),
+                    get_variable_name(beta))
